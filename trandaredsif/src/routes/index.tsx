@@ -100,11 +100,11 @@ function HomePage() {
                 Mer än en förening
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                I hjärtat av Borås blomstrar en nyskapad förening som inte bara siktar på att utmärka sig
+                I hjärtat av Borås blomstrar en förening som inte bara siktar på att utmärka sig
                 på planen, utan också strävar efter att vara en positiv kraft i samhället.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-4">
-                Trandareds IF ska inte bara vara en idrottsförening, utan en plattform för engagemang,
+                Trandareds IF är inte bara en idrottsförening, utan en plattform för engagemang,
                 gemenskap och lokalt samhällsansvar. Välkommen till Trandareds IF, där vi inte bara spelar
                 fotboll — vi förändrar liv.
               </p>
