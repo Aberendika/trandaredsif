@@ -77,9 +77,15 @@ function MatchesPage() {
   const seasons = [
     ...new Set(allMatches.map(getSeason).filter((season): season is string => season !== null)),
   ].sort((a, b) => Number(b.slice(0, 4)) - Number(a.slice(0, 4)) || b.localeCompare(a));
-  const divisions = [...new Set(allMatches.map(getDivision))].sort((a, b) =>
-    a.localeCompare(b, "sv", { numeric: true }),
-  );
+  const getDivisionsForSeason = (season: string) =>
+    [
+      ...new Set(
+        allMatches
+          .filter((match) => season === "all" || getSeason(match) === season)
+          .map(getDivision),
+      ),
+    ].sort((a, b) => a.localeCompare(b, "sv", { numeric: true }));
+  const draftDivisions = getDivisionsForSeason(draftSeason);
   const matchesForFilters = (matches: NormalizedMatch[]) =>
     matches.filter((match) => {
       return (
@@ -193,7 +199,16 @@ function MatchesPage() {
                         <select
                           id="match-season"
                           value={draftSeason}
-                          onChange={(event) => setDraftSeason(event.target.value)}
+                          onChange={(event) => {
+                            const season = event.target.value;
+                            setDraftSeason(season);
+                            if (
+                              draftDivision !== "all" &&
+                              !getDivisionsForSeason(season).includes(draftDivision)
+                            ) {
+                              setDraftDivision("all");
+                            }
+                          }}
                           className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                         >
                           <option value="all">Alla säsonger</option>
@@ -218,7 +233,7 @@ function MatchesPage() {
                           className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                         >
                           <option value="all">Alla divisioner</option>
-                          {divisions.map((division) => (
+                          {draftDivisions.map((division) => (
                             <option key={division} value={division}>
                               {division}
                             </option>
