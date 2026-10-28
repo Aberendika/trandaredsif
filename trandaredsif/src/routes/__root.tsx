@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
+import logo from "../assets/logo.webp";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -34,6 +35,11 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary" },
     ],
     links: [
+      {
+        rel: "icon",
+        type: "image/webp",
+        href: logo,
+      },
       {
         rel: "stylesheet",
         href: appCss,
