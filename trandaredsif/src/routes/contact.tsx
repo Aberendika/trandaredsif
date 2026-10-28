@@ -1,17 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Mail, MapPin, Send, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, MapPin, Send, CheckCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { useServerFn } from "@tanstack/react-start";
-import { contactReasons, sendContactEmail } from "@/lib/contact.functions";
+import { contactReasons } from "@/lib/contact.functions";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Kontakt — Trandareds IF" },
-      { name: "description", content: "Kontakta Trandareds IF. Vill du bli medlem, sponsor eller bara prata fotboll? Hör av dig!" },
+      {
+        name: "description",
+        content:
+          "Kontakta Trandareds IF. Vill du bli medlem, sponsor eller bara prata fotboll? Hör av dig!",
+      },
       { property: "og:title", content: "Kontakt — Trandareds IF" },
       { property: "og:description", content: "Kontakta Trandareds IF i Borås." },
     ],
@@ -26,23 +29,21 @@ function ContactPage() {
     subject: "",
     message: "",
   });
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [status, setStatus] = useState<"idle" | "opened">("idle");
 
-  const sendEmail = useServerFn(sendContactEmail);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("sending");
-    setErrorMsg("");
-    try {
-      await sendEmail({ data: formData });
-      setStatus("sent");
-      setFormData({ reason: "sponsor", email: "", subject: "", message: "" });
-    } catch (err: any) {
-      setStatus("error");
-      setErrorMsg(err?.message || "Något gick fel. Försök igen.");
-    }
+    const reasonLabel = {
+      sponsor: "Sponsorfråga",
+      bollekis: "Bollekis",
+      other: "Annat/Övrigt",
+    }[formData.reason];
+    const subject = formData.subject;
+    const body = `Kontaktanledning: ${reasonLabel}\n\n${formData.message}`;
+    const mailto = `mailto:trandaredsif@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    setStatus("opened");
+    window.location.href = mailto;
   };
 
   return (
@@ -58,8 +59,8 @@ function ContactPage() {
           >
             <h1 className="text-4xl md:text-5xl font-bold text-gold-gradient">Kontakta oss</h1>
             <p className="mt-4 text-muted-foreground max-w-lg mx-auto">
-              Vill du bli en del av vår resa? Vi är en klubb med hjärta, driv och gemenskap.
-              Fyll i formuläret nedan så hör vi av oss så snart vi kan!
+              Vill du bli en del av vår resa? Vi är en klubb med hjärta, driv och gemenskap. Fyll i
+              formuläret nedan så hör vi av oss så snart vi kan!
             </p>
           </motion.div>
 
@@ -75,8 +76,13 @@ function ContactPage() {
                 <Mail className="text-primary" size={20} />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground uppercase font-display tracking-widest">E-post</p>
-                <a href="mailto:Trandaredsif@outlook.com" className="text-sm text-foreground hover:text-primary transition-colors">
+                <p className="text-xs text-muted-foreground uppercase font-display tracking-widest">
+                  E-post
+                </p>
+                <a
+                  href="mailto:Trandaredsif@outlook.com"
+                  className="text-sm text-foreground hover:text-primary transition-colors"
+                >
                   Trandaredsif@outlook.com
                 </a>
               </div>
@@ -86,7 +92,9 @@ function ContactPage() {
                 <MapPin className="text-primary" size={20} />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground uppercase font-display tracking-widest">Plats</p>
+                <p className="text-xs text-muted-foreground uppercase font-display tracking-widest">
+                  Plats
+                </p>
                 <p className="text-sm text-foreground">Borås, Sverige</p>
               </div>
             </div>
@@ -113,7 +121,12 @@ function ContactPage() {
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setFormData({ ...formData, reason: opt.value as (typeof contactReasons)[number] })}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        reason: opt.value as (typeof contactReasons)[number],
+                      })
+                    }
                     className={`px-4 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${
                       formData.reason === opt.value
                         ? "bg-primary text-primary-foreground"
@@ -161,6 +174,7 @@ function ContactPage() {
               <textarea
                 required
                 rows={4}
+                maxLength={5000}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 placeholder="Skriv din fråga eller ditt meddelande här."
@@ -168,27 +182,22 @@ function ContactPage() {
               />
             </div>
 
-            {status === "sent" && (
-              <div className="flex items-center gap-2 text-green-400 bg-green-400/10 border border-green-400/20 rounded-lg px-4 py-3 text-sm">
+            {status === "opened" && (
+              <div
+                role="status"
+                className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-foreground"
+              >
                 <CheckCircle size={16} />
-                Tack! Ditt meddelande har skickats.
-              </div>
-            )}
-
-            {status === "error" && (
-              <div className="flex items-center gap-2 text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3 text-sm">
-                <AlertCircle size={16} />
-                {errorMsg}
+                E-postprogrammet öppnas med meddelandet ifyllt. Skicka det därifrån.
               </div>
             )}
 
             <button
               type="submit"
-              disabled={status === "sending"}
               className="w-full bg-gold-gradient font-display text-sm font-bold tracking-widest uppercase px-8 py-3 rounded-lg text-primary-foreground hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Send size={16} />
-              {status === "sending" ? "Skickar..." : "Skicka"}
+              Skicka via e-postprogram
             </button>
           </motion.form>
         </div>
