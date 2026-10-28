@@ -1,15 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+export const contactReasons = ["sponsor", "bollekis", "other"] as const;
+
 const contactSchema = z.object({
-  reason: z.enum(["sponsor", "other"]),
+  reason: z.enum(contactReasons),
   email: z.string().email().max(255),
   subject: z.string().min(1).max(255),
   message: z.string().min(1).max(5000),
 });
 
 export const sendContactEmail = createServerFn({ method: "POST" })
-  .inputValidator((input: z.infer<typeof contactSchema>) => contactSchema.parse(input))
+  .validator((input: z.infer<typeof contactSchema>) => contactSchema.parse(input))
   .handler(async ({ data }) => {
     const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
@@ -23,7 +25,12 @@ export const sendContactEmail = createServerFn({ method: "POST" })
       throw new Error("RESEND_API_KEY is not configured. Connect Resend via Connectors.");
     }
 
-    const reasonLabel = data.reason === "sponsor" ? "Sponsorfråga" : "Annat/Övrigt";
+    const reasonLabel =
+      data.reason === "sponsor"
+        ? "Sponsorfråga"
+        : data.reason === "bollekis"
+          ? "Bollekis"
+          : "Annat/Övrigt";
 
     const htmlBody = `
       <h2>Nytt kontaktformulär från trandaredsif.se</h2>

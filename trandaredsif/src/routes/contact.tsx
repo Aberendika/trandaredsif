@@ -5,7 +5,7 @@ import { Mail, MapPin, Send, CheckCircle, AlertCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useServerFn } from "@tanstack/react-start";
-import { sendContactEmail } from "@/lib/contact.functions";
+import { contactReasons, sendContactEmail } from "@/lib/contact.functions";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const [formData, setFormData] = useState({
-    reason: "sponsor" as "sponsor" | "other",
+    reason: "sponsor" as (typeof contactReasons)[number],
     email: "",
     subject: "",
     message: "",
@@ -113,7 +113,7 @@ function ContactPage() {
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setFormData({ ...formData, reason: opt.value as "sponsor" | "other" })}
+                    onClick={() => setFormData({ ...formData, reason: opt.value as (typeof contactReasons)[number] })}
                     className={`px-4 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${
                       formData.reason === opt.value
                         ? "bg-primary text-primary-foreground"
