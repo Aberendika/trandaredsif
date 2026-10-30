@@ -36,11 +36,16 @@ export const Route = createFileRoute("/matches")({
 });
 
 const getSeason = (match: NormalizedMatch) => {
-  const season = match.league.match(/\b((?:19|20)\d{2})\s*\/\s*((?:19|20)\d{2})\b/);
-  return season ? `${season[1]}/${season[2]}` : null;
+  const date = new Date(match.rawDate);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const year = date.getFullYear();
+  const seasonStartYear =
+    date.getMonth() < 5 || (date.getMonth() === 5 && date.getDate() <= 1) ? year - 1 : year;
+  return `${seasonStartYear}/${seasonStartYear + 1}`;
 };
 
-const getDivision = (match: NormalizedMatch) => {
+const getCompetition = (match: NormalizedMatch) => {
   const division = match.league.match(/\b(?:div(?:ision)?\.?)\s*(\d+)\b/i);
   if (!division) return match.league;
 
@@ -58,9 +63,9 @@ function MatchesPage() {
   const [visibleCount, setVisibleCount] = useState(4);
   const [upcomingVisibleCount, setUpcomingVisibleCount] = useState(4);
   const [selectedSeason, setSelectedSeason] = useState("all");
-  const [selectedDivision, setSelectedDivision] = useState("all");
+  const [selectedCompetition, setSelectedCompetition] = useState("all");
   const [draftSeason, setDraftSeason] = useState("all");
-  const [draftDivision, setDraftDivision] = useState("all");
+  const [draftCompetition, setDraftCompetition] = useState("all");
   const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
@@ -77,20 +82,20 @@ function MatchesPage() {
   const seasons = [
     ...new Set(allMatches.map(getSeason).filter((season): season is string => season !== null)),
   ].sort((a, b) => Number(b.slice(0, 4)) - Number(a.slice(0, 4)) || b.localeCompare(a));
-  const getDivisionsForSeason = (season: string) =>
+  const getCompetitionsForSeason = (season: string) =>
     [
       ...new Set(
         allMatches
           .filter((match) => season === "all" || getSeason(match) === season)
-          .map(getDivision),
+          .map(getCompetition),
       ),
     ].sort((a, b) => a.localeCompare(b, "sv", { numeric: true }));
-  const draftDivisions = getDivisionsForSeason(draftSeason);
+  const draftCompetitions = getCompetitionsForSeason(draftSeason);
   const matchesForFilters = (matches: NormalizedMatch[]) =>
     matches.filter((match) => {
       return (
         (selectedSeason === "all" || getSeason(match) === selectedSeason) &&
-        (selectedDivision === "all" || getDivision(match) === selectedDivision)
+        (selectedCompetition === "all" || getCompetition(match) === selectedCompetition)
       );
     });
 
@@ -102,10 +107,11 @@ function MatchesPage() {
     setVisibleCount(4);
     setUpcomingVisibleCount(4);
   };
-  const activeFilterCount = Number(selectedSeason !== "all") + Number(selectedDivision !== "all");
+  const activeFilterCount =
+    Number(selectedSeason !== "all") + Number(selectedCompetition !== "all");
   const applyFilters = () => {
     setSelectedSeason(draftSeason);
-    setSelectedDivision(draftDivision);
+    setSelectedCompetition(draftCompetition);
     resetVisibleCounts();
     setFilterOpen(false);
   };
@@ -159,7 +165,7 @@ function MatchesPage() {
                   onOpenChange={(open) => {
                     if (open) {
                       setDraftSeason(selectedSeason);
-                      setDraftDivision(selectedDivision);
+                      setDraftCompetition(selectedCompetition);
                     }
                     setFilterOpen(open);
                   }}
@@ -185,7 +191,7 @@ function MatchesPage() {
                         Filtrera matcher
                       </DialogTitle>
                       <DialogDescription>
-                        Välj säsong och division. Filtren gäller både kommande matcher och resultat.
+                        Välj säsong och tävling. Filtren gäller både kommande matcher och resultat.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-5 py-3">
@@ -203,10 +209,10 @@ function MatchesPage() {
                             const season = event.target.value;
                             setDraftSeason(season);
                             if (
-                              draftDivision !== "all" &&
-                              !getDivisionsForSeason(season).includes(draftDivision)
+                              draftCompetition !== "all" &&
+                              !getCompetitionsForSeason(season).includes(draftCompetition)
                             ) {
-                              setDraftDivision("all");
+                              setDraftCompetition("all");
                             }
                           }}
                           className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -221,21 +227,21 @@ function MatchesPage() {
                       </div>
                       <div>
                         <label
-                          htmlFor="match-division"
+                          htmlFor="match-competition"
                           className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground"
                         >
-                          Division
+                          Tävling
                         </label>
                         <select
-                          id="match-division"
-                          value={draftDivision}
-                          onChange={(event) => setDraftDivision(event.target.value)}
+                          id="match-competition"
+                          value={draftCompetition}
+                          onChange={(event) => setDraftCompetition(event.target.value)}
                           className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                         >
-                          <option value="all">Alla divisioner</option>
-                          {draftDivisions.map((division) => (
-                            <option key={division} value={division}>
-                              {division}
+                          <option value="all">Alla tävlingar</option>
+                          {draftCompetitions.map((competition) => (
+                            <option key={competition} value={competition}>
+                              {competition}
                             </option>
                           ))}
                         </select>
@@ -246,7 +252,7 @@ function MatchesPage() {
                         type="button"
                         onClick={() => {
                           setDraftSeason("all");
-                          setDraftDivision("all");
+                          setDraftCompetition("all");
                         }}
                         className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                       >
