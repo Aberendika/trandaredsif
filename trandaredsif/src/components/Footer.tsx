@@ -4,21 +4,17 @@ import logo from "@/assets/logo.webp";
 import instagramIcon from "@/assets/instagram.png";
 import tiktokIcon from "@/assets/tiktok.png";
 import intersport from "@/assets/intersport.webp";
-import plusmargret from "@/assets/plusmargret.png";
 import craft from "@/assets/craft-neg.png";
-import fbcargo from "@/assets/fbcargo.png";
-import bakerLogistics from "@/assets/baker-logistics-neg.png";
-import allegio from "@/assets/allegioo.png";
 import moccadeli from "@/assets/moccadeli.png";
+import bilprovningen from "@/assets/bilprovningen.svg";
+import friends from "@/assets/friends.svg";
 
 const sponsors = [
-  { name: "Intersport", url: "https://www.intersport.se/", logo: intersport },
-  { name: "+MARGRET", url: "https://margret.se/", logo: plusmargret },
-  { name: "Craft of Scandinavia", url: "https://www.craftofscandinavia.se/", logo: craft },
-  { name: "FB Cargo", url: "https://www.fb-cargo.se/", logo: fbcargo },
-  { name: "Baker Logistics", url: "https://bakerlogistics.se/", logo: bakerLogistics },
-  { name: "Allegio", url: "https://allegio.se/ort/boras/", logo: allegio },
   { name: "Mocca Deli", url: "https://moccadeli.se/mocca-deli-boras/", logo: moccadeli },
+  { name: "Bilprovningen", url: "https://www.bilprovningen.se/", logo: bilprovningen },
+  { name: "Friends", url: "https://friends.se/", logo: friends },
+  { name: "Intersport", url: "https://www.intersport.se/", logo: intersport },
+  { name: "Craft of Scandinavia", url: "https://www.craftofscandinavia.se/", logo: craft },
 ];
 
 export function Footer() {
